@@ -1,6 +1,15 @@
-# Heuristic Optimized Routing Service Engine
+# Horse: Heuristic Optimized Router Services Engine 
 
-Router prototype that enables prompt routing to different LLMs based on:
+This prototype enables prompt routing to different LLMs based on:
 
 - Prompt characteristics
 - LLM attributes (cost, speed, feature set, etc.)
+
+Heuristic features can indicate "cognitive load" of promt or processing difficulty:
+
+- Nested instructions/questions
+- Number of subtasks
+- Vocabulary diversity
+- Domain specificity
+- Condtional logc
+- Sentence count and structure

@@ -1,6 +1,6 @@
 provider "aws" {
   region = var.aws_region
-  profile = var.profile
+  profile = var.aws_profile
 }
 
 resource "aws_ecr_repository" "horse" {
@@ -9,11 +9,6 @@ resource "aws_ecr_repository" "horse" {
   image_scanning_configuration { scan_on_push = true }
   tags = { Project = var.project, Env = var.env }
 }
-
-output "ecr_repository_url" {
-  value = aws_ecr_repository.horse.repository_url
-}
-
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -41,6 +36,17 @@ module "vpc" {
   tags = { Project = var.project, Env = var.env }
 }
 
-output "vpc_id"            { value = module.vpc.vpc_id }
-output "public_subnet_ids" { value = module.vpc.public_subnets }
 
+module "tf_state_bucket" {
+  source      = "./modules/s3"
+  bucket_name = local.tf_bucket_name
+  purpose     = "tfstate"
+  tags        = { Project = var.project, Env = var.env }
+}
+
+module "mlflow_bucket" {
+  source      = "./modules/s3"
+  bucket_name = local.ml_bucket_name
+  purpose     = "mlflow"
+  tags        = { Project = var.project, Env = var.env }
+}

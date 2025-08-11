@@ -14,7 +14,7 @@ variable "env" {
   default     = "dev"
 }
 
-variable "profile" {
+variable "aws_profile" {
   type        = string
   default     = "default"
 }

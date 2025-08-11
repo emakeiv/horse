@@ -41,6 +41,7 @@ class FeatureExtractor:
         self.safety = tuple(s.lower() for s in cfg.safety)
         self.json_terms = tuple(s.lower() for s in cfg.json_terms)
         self.code_terms = tuple(s.lower() for s in cfg.code_terms)
+        self.complexity = cfg.complexity
         self.cx = cfg.complexity.model_dump()
 
         self.tk_enc = None
@@ -64,7 +65,7 @@ class FeatureExtractor:
         return hashlib.sha1(text.encode("utf-8")).hexdigest()
 
     @classmethod
-    def from_file(cls, path: str) -> "FeatureExtractor":
+    def from_file(cls, path: str):
         if not os.path.exists(path):
             raise FileNotFoundError(f"feature extractor config file not found: {path}")
         if path.endswith((".yml", ".yaml")):
@@ -81,7 +82,9 @@ class FeatureExtractor:
             raise ValueError(f"Invalid feature config: {e}") from e
         return cls(cfg)
 
-
+    def _get_tokens(self, text: str) -> list[str]:
+        return (text).casefold().translate(self._punct_table).split()
+        
     def _estimate_tokens(self, text: str) -> int:
         if self.tk_enc:
             try:
@@ -91,19 +94,46 @@ class FeatureExtractor:
         return len(self.token.findall(text))
 
     def _score_complexity(self, text: str) -> float:
-        pass
+        tokens = self._get_tokens(text)
+        n = len(tokens)
+        if n == 0:
+            return 0.0
+        
+        score = float(n > self.complexity.length_thresholds)
+        tokset = set(tokens)
+        score += sum(1.0 for m in self._branch_set if m in tokset)
+        score += sum(1.0 for m in self._multistep_set if m in tokset) * self._multistep_scale
 
+        uniq_ratio = len(tokset) / n
+        if uniq_ratio < self._uniq_penalty_lt:
+            score += 1.0
+
+        return score
+    
     def _estimate_latency(self, text: str) -> str:
         pass
 
-    def _one(self, text: str) -> Features:
+    def _get_one(self, text: str) -> Features:
         pass
 
-    def _batch(self, prompts: Iterable[str], ids: Optional[Iterable[str]] = None) -> pd.DataFrame:
+    def _get_batch(self, prompts: Iterable[str], ids: Optional[Iterable[str]] = None) -> pd.DataFrame:
         pass
 
-    def save(self, data: Any, path: str) -> None:
-        pass
+    def save(self, df: pd.DataFrame, path: str) -> None:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        ext = os.path.splitext(path)[1].lower()
+        if ext in (".parquet", ".pq"):
+            df.to_parquet(path, index=False)
+        elif ext in (".feather", ".ft"):
+            df.to_feather(path)
+        else:
+            raise ValueError("use .parquet or .feather")
 
     def load(self, path: str) -> pd.DataFrame:
-        pass
+        ext = os.path.splitext(path)[1].lower()
+        if ext in (".parquet", ".pq"):
+            return pd.read_parquet(path)
+        elif ext in (".feather", ".ft"):
+            return pd.read_feather(path)
+        else:
+            raise ValueError("use .parquet or .feather")

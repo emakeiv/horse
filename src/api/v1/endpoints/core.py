@@ -10,4 +10,11 @@ router = APIRouter(
 
 @router.post("/", response_model=RouteResponse)
 async def route(req: RouteRequest) -> RouteResponse:
-    pass
+    return {
+        "model": "dummy",
+        "reasons": ["A", "B"],
+        "features": {
+            "a": 1,
+            "b": 2
+        }
+    }

@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.v1.endpoints import health
+from src.api.v1.endpoints import health, core
 
 def create_server() -> FastAPI:
     server = FastAPI(
@@ -20,8 +20,7 @@ def create_server() -> FastAPI:
 
 
     server.include_router(health.router, prefix="/api/v1")
-    
+    server.include_router(core.router, prefix="/api/v1")
     return server
 
-#TODO: db mappers ?
 app = create_server()
