@@ -1,0 +1,4 @@
+[submodule "vendor/promt-cls-core"]
+	path = vendor/promt-cls-core
+	url = git@github.com:emakeiv/promt-cls-core.git
+	branch = master

@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from dataclasses import dataclass
 from typing import Dict, Optional, Iterable, Any
 
-from src.core.fel.schema import FeatureCfg
+from src.core.etl.schema import FeatureCfg
 
 @dataclass
 class Features:
